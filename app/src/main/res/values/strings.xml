@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">CmlRecorder</string>
+    <string name="action_setting">Setting</string>
+    <string name="record_prompt">Tap the button to start recording</string>
+    <string name="noAudioFile">There is no recording file here</string>
+    <string name="giveName">Give me a name</string>
+    <string name="useDefault">UseDefault</string>
+    <string name="noName">Give me a name please</string>
+    <string name="dialog_file_share">share</string>
+    <string name="dialog_file_delete">delete</string>
+    <string name="dialog_title_options">options</string>
+    <string name="dialog_action_cancel">cancel</string>
+    <string name="dialog_action_yes">yes</string>
+    <string name="dialog_action_no">no</string>
+    <string name="send_to">Send To</string>
+    <string name="dialog_title_delete">Delete Recorder</string>
+    <string name="dialog_text_delete">Are you sure delete</string>
+    <string name="pref_high_quality_title">Enable High Quality Recording</string>
+</resources>
