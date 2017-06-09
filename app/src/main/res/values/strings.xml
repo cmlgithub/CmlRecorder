@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">CmlRecorder</string>
+    <string name="action_setting">Setting</string>
+    <string name="record_prompt">Tap the button to start recording</string>
+    <string name="noAudioFile">There is no recording file here</string>
+    <string name="giveName">Give me a name</string>
+    <string name="useDefault">UseDefault</string>
+    <string name="noName">Give me a name please</string>
+</resources>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.cml.cmlrecorder.MainActivity">
+
+    <android.support.v7.widget.Toolbar
+        app:title="@string/app_name"
+        app:titleTextColor="@android:color/white"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:elevation="4dp"
+        android:background="@color/colorPrimary"
+        android:id="@+id/toolBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+
+
+    <android.support.design.widget.TabLayout
+        app:tabIndicatorColor="@color/tabIndicatorColor"
+        app:tabTextAppearance="@style/CMlTabTheme"
+        android:elevation="4dp"
+        app:tabTextColor="#55ffffff"
+        app:tabSelectedTextColor="@android:color/white"
+        android:id="@+id/tabLayout"
+        android:background="@color/colorPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</LinearLayout>
