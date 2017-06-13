@@ -1,4 +1,4 @@
-package com.cml.cmlrecorder;
+package com.cml.cmlrecorder.service;
 
 import android.app.Service;
 import android.content.Intent;
@@ -7,7 +7,12 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
+import android.widget.Toast;
+
+import com.cml.cmlrecorder.R;
+import com.cml.cmlrecorder.db.DBHelper;
+import com.cml.cmlrecorder.utils.MySharedPreferences;
+import com.cml.cmlrecorder.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,10 +32,12 @@ public class RecorderService extends Service {
     private String defaultFilePath = rootPath +"/CmlRecorder/";
     private MediaRecorder mMediaRecorder;
     private long mStartingTimeMillis;
+    private DBHelper mdbHelper;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        mdbHelper = new DBHelper(getApplicationContext());
     }
 
     @Override
@@ -60,7 +67,8 @@ public class RecorderService extends Service {
             mMediaRecorder.start();
             mStartingTimeMillis = System.currentTimeMillis();
         } catch (IOException e) {
-            Log.e("CML",e.toString()+"");
+            Utils.cmlLog(e.toString());
+            Toast.makeText(this, getString(R.string.audio_failed), Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -80,7 +88,6 @@ public class RecorderService extends Service {
             fileDirectory = rootPath + "/" + mFilePath;
             mFilePath = fileDirectory + "/" + mFileName + ".mp3";
         }
-        MySharedPreferences.setAudioPath(this,fileDirectory);
         File file = new File(fileDirectory);
         if(!file.exists()){
             file.mkdirs();
@@ -103,16 +110,7 @@ public class RecorderService extends Service {
 
     private void stopRecorder() {
         mMediaRecorder.stop();
-        long duration = System.currentTimeMillis() - mStartingTimeMillis;
-        File file = new File(mFilePath);
-        if(file.exists()){
-            String fileName = file.getName();
-            StringBuilder stringBuilder = new StringBuilder(fileName);
-            stringBuilder.insert(fileName.indexOf('.'),"_"+duration);
-            String newFilePath = mFilePath.replace(mFilePath.substring(mFilePath.lastIndexOf("recorder"), mFilePath.length()),"")+stringBuilder.toString();
-            MySharedPreferences.saveNeedRenameAudioPath(this,newFilePath);
-            file.renameTo(new File(newFilePath));
-        }
+        mdbHelper.addData(mdbHelper,mFilePath,System.currentTimeMillis() - mStartingTimeMillis+"");
         mMediaRecorder.release();
         mMediaRecorder = null;
     }

@@ -1,4 +1,8 @@
-package com.cml.cmlrecorder;
+package com.cml.cmlrecorder.utils;
+
+import android.util.Log;
+
+import com.cml.cmlrecorder.BuildConfig;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,6 +14,9 @@ import java.util.regex.Pattern;
 
 public class Utils {
 
+    public static final String TAG = "CML";
+    public static final boolean isDebug = BuildConfig.IS_DEBUG;
+
     public static boolean isNumerStr(String str){
         Pattern pattern = Pattern.compile("[0-9]*");
         Matcher isNum = pattern.matcher(str);
@@ -17,5 +24,11 @@ public class Utils {
             return false;
         }
         return true;
+    }
+
+    public static void cmlLog(String msg){
+        if(isDebug && msg != null){
+            Log.e(TAG,msg);
+        }
     }
 }

@@ -3,17 +3,23 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
+
+    def LOG_RELEASE = true
+    def LOG_DEV = false
+
     defaultConfig {
         applicationId "com.cml.cmlrecorder"
         minSdkVersion 14
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
+        buildConfigField("boolean", "IS_DEBUG", "${LOG_DEV}")
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
             minifyEnabled false
+            buildConfigField("boolean", "IS_DEBUG", "${LOG_RELEASE}")
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

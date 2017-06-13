@@ -1,0 +1,19 @@
+<resources>
+    <string name="record_prompt">点击按钮开始录音</string>
+    <string name="noAudioFile">没有录音文件</string>
+    <string name="giveName">给我起个名字</string>
+    <string name="useDefault">默认</string>
+    <string name="noName">还没有给我起名字呢?</string>
+    <string name="dialog_file_share">分享</string>
+    <string name="dialog_file_delete">删除</string>
+    <string name="dialog_title_options">请选择</string>
+    <string name="dialog_action_cancel">取消</string>
+    <string name="dialog_title_delete">删除录音</string>
+    <string name="dialog_text_delete">确定删除录音文件?</string>
+    <string name="pref_high_quality_title">高质量录音</string>
+    <string name="audio_failed">录音失败</string>
+    <string name="fileNoExists">文件不存在</string>
+    <string name="startFailed">播放失败</string>
+    <string name="recorder">录音</string>
+    <string name="recorderFile">录音文件</string>
+</resources>

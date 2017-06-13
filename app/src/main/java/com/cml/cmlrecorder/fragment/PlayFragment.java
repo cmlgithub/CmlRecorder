@@ -1,4 +1,4 @@
-package com.cml.cmlrecorder;
+package com.cml.cmlrecorder.fragment;
 
 import android.app.Dialog;
 import android.media.MediaPlayer;
@@ -11,14 +11,16 @@ import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
+import com.cml.cmlrecorder.R;
+import com.cml.cmlrecorder.fragment.base.BaseDialogFragment;
+import com.cml.cmlrecorder.utils.Utils;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,21 +31,24 @@ import java.util.concurrent.TimeUnit;
 public class PlayFragment extends BaseDialogFragment {
 
 
-    private static final String POSITION = "position";
-    private File mAudioFile;
+    private static final String NAME = "name";
+    private static final String PATH = "path";
+    private static final String LENGTH = "length";
     private TextView mFileName;
     private SeekBar mSeekBar;
     private TextView mCurrentProgressText;
     private FloatingActionButton mPlayOrPause;
     private TextView mDurationText;
     private MediaPlayer mediaPlayer;
+    private String mPath;
 
 
-
-    public static PlayFragment newInstance(int position){
+    public static PlayFragment newInstance(String name,String path,String length){
         PlayFragment playFragment = new PlayFragment();
         Bundle bundle = new Bundle();
-        bundle.putInt(POSITION,position);
+        bundle.putString(NAME,name);
+        bundle.putString(PATH,path);
+        bundle.putString(LENGTH,length);
         playFragment.setArguments(bundle);
         return playFragment;
     }
@@ -51,26 +56,23 @@ public class PlayFragment extends BaseDialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog =  super.onCreateDialog(savedInstanceState);
+        super.onCreateDialog(savedInstanceState);
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         View dialogView = LayoutInflater.from(mContext).inflate(R.layout.play_fragment, null);
         builder.setView(dialogView);
-//        dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        List<File> audioList = getAudioList();
-        int position = getArguments().getInt(POSITION);
-        mAudioFile = audioList.get(position);
-        if(mAudioFile == null){
-            return builder.create();
-        }
+        Bundle arguments = getArguments();
+        String name = arguments.getString(NAME);
+        mPath = arguments.getString(PATH);
+        String length = arguments.getString(LENGTH);
+
         mFileName = (TextView) dialogView.findViewById(R.id.file_name_text_view);
         mCurrentProgressText = (TextView) dialogView.findViewById(R.id.current_progress_text_view);
         mDurationText = (TextView) dialogView.findViewById(R.id.file_length_text_view);
         mSeekBar = (SeekBar) dialogView.findViewById(R.id.seekBar);
         mPlayOrPause = (FloatingActionButton) dialogView.findViewById(R.id.fab_play);
 
-        String fileName = mAudioFile.getName();
-        mFileName.setText(fileName);
-        String duration = fileName.substring(fileName.indexOf("_") + 1, fileName.indexOf(".mp3"));
+        mFileName.setText(name+"");
+        String duration = length;
         if(!TextUtils.isEmpty(duration)){
             if(Utils.isNumerStr(duration)){//判断字符串是否只包含数字
                 long minutes = TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(duration));
@@ -89,21 +91,24 @@ public class PlayFragment extends BaseDialogFragment {
     }
 
     private void playOrPauseAudio() {
-        if(mediaPlayer != null && mediaPlayer.isPlaying()){
+        if(mediaPlayer != null && mediaPlayer.isPlaying()){//暂停播放
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);//clear keep screen light on
             mPlayOrPause.setImageResource(R.mipmap.ic_media_play);
             mediaPlayer.pause();
             return;
         }
 
-        if(mediaPlayer != null){
+        if(mediaPlayer != null){//从暂停状态开始播放
             mediaPlayer.start();
             return;
         }
 
+        //新的音频开始播放
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);//keep screen light on
         mPlayOrPause.setImageResource(R.mipmap.ic_media_stop);
         mediaPlayer = new MediaPlayer();
         try {
-            mediaPlayer.setDataSource(mAudioFile.getPath());
+            mediaPlayer.setDataSource(mPath);
             mediaPlayer.prepare();
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
@@ -123,7 +128,9 @@ public class PlayFragment extends BaseDialogFragment {
                 }
             });
         } catch (IOException e) {
-            Toast.makeText(mContext, e.toString(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, e.toString()+"___"+getString(R.string.startFailed), Toast.LENGTH_SHORT).show();
+            mPlayOrPause.setImageResource(R.mipmap.ic_media_play);
+            dismiss();
         }
 
 
@@ -149,19 +156,6 @@ public class PlayFragment extends BaseDialogFragment {
     }
 
 
-    private List<File> getAudioList(){
-        List<File> audioList = new ArrayList<>();
-        String audioPathDirectory = MySharedPreferences.getAudioPath(mContext);
-        if(!TextUtils.isEmpty(audioPathDirectory)){
-            File[] allFiles = new File(audioPathDirectory).listFiles();
-            for (File file : allFiles){
-                if(file.getAbsolutePath().contains(".mp3")){
-                    audioList.add(file);
-                }
-            }
-        }
-        return audioList;
-    }
 
     @Override
     public void onPause() {

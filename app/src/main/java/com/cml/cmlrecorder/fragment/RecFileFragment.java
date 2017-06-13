@@ -1,8 +1,9 @@
-package com.cml.cmlrecorder;
+package com.cml.cmlrecorder.fragment;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -13,11 +14,16 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.cml.cmlrecorder.R;
+import com.cml.cmlrecorder.bean.AudioBean;
+import com.cml.cmlrecorder.db.DBHelper;
+import com.cml.cmlrecorder.fragment.base.BaseFragment;
+import com.cml.cmlrecorder.utils.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -33,6 +39,7 @@ public class RecFileFragment extends BaseFragment {
 
     private RecyclerView mRecyclerView;
     private TextView mNoAudioFileTextView;
+    private DBHelper mDbHelper;
 
     public static RecFileFragment newsInstance(){
         RecFileFragment recFileFragment = new RecFileFragment();
@@ -41,6 +48,11 @@ public class RecFileFragment extends BaseFragment {
         return recFileFragment;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mDbHelper = new DBHelper(mActivity);
+    }
 
     @Nullable
     @Override
@@ -56,24 +68,20 @@ public class RecFileFragment extends BaseFragment {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
         updateData();
     }
-    private List<File> mAudioFiles = new ArrayList<>();
+    private List<AudioBean> mAudioFiles = new ArrayList<>();
 
     public void updateData(){
         if(mAudioFiles != null){
             mAudioFiles.clear();
         }
-        String audioPathDirectory = MySharedPreferences.getAudioPath(mActivity);
-        if(TextUtils.isEmpty(audioPathDirectory)){
-            return;
-        }
-        File[] allFiles = new File(audioPathDirectory).listFiles();
-        if(allFiles == null){
-            return;
-        }
-        for (File file : allFiles){
-            if(file.getAbsolutePath().contains(".mp3")){
-                mAudioFiles.add(file);
-            }
+
+        String querySql = "select * from audio";
+        Cursor audioDataCursor = mDbHelper.getWritableDatabase().rawQuery(querySql, null);
+        while (audioDataCursor.moveToNext()){
+            mAudioFiles.add(new AudioBean(audioDataCursor.getString(audioDataCursor.getColumnIndex("_id")),
+                    audioDataCursor.getString(audioDataCursor.getColumnIndex("name")),
+                    audioDataCursor.getString(audioDataCursor.getColumnIndex("path")),
+                    audioDataCursor.getString(audioDataCursor.getColumnIndex("length"))));
         }
 
         if(mAudioFiles.size() == 0){
@@ -86,26 +94,8 @@ public class RecFileFragment extends BaseFragment {
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if(isVisibleToUser){
-            if(mAudioFiles != null){
-                mAudioFiles.clear();
-            }
-            String audioPathDirectory = MySharedPreferences.getAudioPath(mActivity);
-            if(TextUtils.isEmpty(audioPathDirectory)){
-                return;
-            }
-            File[] allFiles = new File(audioPathDirectory).listFiles();
-            if(allFiles == null){
-                return;
-            }
-            for (File file : allFiles){
-                if(file.getAbsolutePath().contains(".mp3")){
-                    mAudioFiles.add(file);
-                }
-            }
-
-
-            mRecyclerView.setAdapter(mRecFileAdapter = new RecFileAdapter());
+        if(isVisibleToUser){//相当于onResume(),目的:及时更新数据
+            updateData();
         }
     }
     private RecFileAdapter mRecFileAdapter ;
@@ -119,11 +109,10 @@ public class RecFileFragment extends BaseFragment {
 
         @Override
         public void onBindViewHolder(RecFileViewHolder holder, final int position) {
-            final File file = mAudioFiles.get(position);
-            if(file != null){
-                String fileName = file.getName();
-                holder.mFile_name_text.setText(fileName.substring(fileName.indexOf("recorder")+8,fileName.indexOf("_"))+".mp3");
-                String duration = fileName.substring(fileName.indexOf("_") + 1, fileName.indexOf(".mp3"));
+            final AudioBean audioBean = mAudioFiles.get(position);
+            if(audioBean != null){
+                holder.mFile_name_text.setText(audioBean.name+"");
+                String duration = audioBean.length;
                 if(!TextUtils.isEmpty(duration)){
                     if(Utils.isNumerStr(duration)){//判断字符串是否只包含数字
                         long minutes = TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(duration));
@@ -131,7 +120,7 @@ public class RecFileFragment extends BaseFragment {
                         holder.mFile_length_text.setText(String.format("%02d:%02d", minutes, seconds));
                     }
                 }
-                long lastModified = file.lastModified();
+                long lastModified = new File(audioBean.path).lastModified();
                 holder.mFile_date_added_text.setText(
                         DateUtils.formatDateTime(
                                 mActivity,
@@ -144,7 +133,7 @@ public class RecFileFragment extends BaseFragment {
                     @Override
                     public void onClick(View v) {
                         FragmentTransaction fragmentTransaction = ((FragmentActivity) mActivity).getSupportFragmentManager().beginTransaction();
-                        PlayFragment.newInstance(position).show(fragmentTransaction,"PlayFragment");
+                        PlayFragment.newInstance(audioBean.name,audioBean.path,audioBean.length).show(fragmentTransaction,PlayFragment.class.getSimpleName());
                     }
                 });
                 holder.mCardView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -194,9 +183,9 @@ public class RecFileFragment extends BaseFragment {
     public void shareFileDialog(int position) {
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);
-        shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(mAudioFiles.get(position).getAbsolutePath())));
+        shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(mAudioFiles.get(position).path)));
         shareIntent.setType("audio/mp3");
-        mActivity.startActivity(Intent.createChooser(shareIntent, mActivity.getText(R.string.send_to)));
+        mActivity.startActivity(Intent.createChooser(shareIntent, mActivity.getText(R.string.dialog_file_share)));
     }
 
 
@@ -211,11 +200,12 @@ public class RecFileFragment extends BaseFragment {
                     public void onClick(DialogInterface dialog, int id) {
                         try {
                             //remove item from database, recyclerview, and storage
+                            mDbHelper.deleteData(mDbHelper,mAudioFiles.get(position).path);
                             mAudioFiles.remove(position);
                             mRecFileAdapter.notifyItemRemoved(position);
-                            new File(mAudioFiles.get(position).getAbsolutePath()).delete();
+                            new File(mAudioFiles.get(position).path).delete();
                         } catch (Exception e) {
-                            Log.e("CML", "exception", e);
+                           Utils.cmlLog(e.toString());
                         }
 
                         dialog.cancel();

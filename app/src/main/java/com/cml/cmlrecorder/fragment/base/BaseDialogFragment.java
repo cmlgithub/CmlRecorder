@@ -1,4 +1,4 @@
-package com.cml.cmlrecorder;
+package com.cml.cmlrecorder.fragment.base;
 
 import android.content.Context;
 import android.support.v4.app.DialogFragment;

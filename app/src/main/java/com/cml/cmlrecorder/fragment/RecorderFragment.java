@@ -1,21 +1,22 @@
-package com.cml.cmlrecorder;
+package com.cml.cmlrecorder.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.Chronometer;
 import android.widget.CompoundButton;
+import android.widget.Toast;
 
-import java.io.File;
+import com.cml.cmlrecorder.R;
+import com.cml.cmlrecorder.fragment.base.BaseFragment;
+import com.cml.cmlrecorder.service.RecorderService;
+import com.cml.cmlrecorder.utils.MySharedPreferences;
 
 /**
  * author：cml on 2017/6/6
@@ -29,6 +30,7 @@ public class RecorderFragment extends BaseFragment implements View.OnClickListen
     private AudioNameFragment mAudioNameFragment;
     private Chronometer mChronometer;
     private CheckBox mCheckBox;
+    private boolean isStartRecorder = true;
 
     public static RecorderFragment newsInstance(){
         RecorderFragment recorderFragment = new RecorderFragment();
@@ -57,16 +59,8 @@ public class RecorderFragment extends BaseFragment implements View.OnClickListen
         mAudioNameFragment.setReturnAudioName(new AudioNameFragment.ReturnAudioName() {
             @Override
             public void returnAudioName(String newName) {
-                String needRenameAudioPath = MySharedPreferences.getNeedRenameAudioPath(mActivity);
-                if(!TextUtils.isEmpty(needRenameAudioPath)){
-                    File file = new File(needRenameAudioPath);
-                    if(file.exists()){
-                        String substring = needRenameAudioPath.substring(needRenameAudioPath.indexOf("recorder") + 8, needRenameAudioPath.indexOf("_"));
-                        needRenameAudioPath = needRenameAudioPath.replace(substring,newName);
-                        file.renameTo(new File(needRenameAudioPath));
-                        MySharedPreferences.saveNeedRenameAudioPath(mActivity,"");
-                    }
-                }
+                //TODO reName audio file
+                Toast.makeText(mActivity, "new Name:"+newName, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -81,7 +75,7 @@ public class RecorderFragment extends BaseFragment implements View.OnClickListen
             }
         });
     }
-    private boolean isStartRecorder = true;
+
     @Override
     public void onClick(View v) {
         switch (v.getId()){
@@ -105,8 +99,8 @@ public class RecorderFragment extends BaseFragment implements View.OnClickListen
                         mActivity.stopService(new Intent(mActivity,RecorderService.class));
                         mChronometer.stop();
                         mChronometer.setBase(SystemClock.elapsedRealtime());
-                        FragmentTransaction fragmentTransaction = ((FragmentActivity) mActivity).getSupportFragmentManager().beginTransaction();
-                        mAudioNameFragment.show(fragmentTransaction,"AudioNameFragment");
+//                        FragmentTransaction fragmentTransaction = ((FragmentActivity) mActivity).getSupportFragmentManager().beginTransaction();
+//                        mAudioNameFragment.show(fragmentTransaction,AudioNameFragment.class.getSimpleName());
                     }
                     isStartRecorder = !isStartRecorder;
                 }

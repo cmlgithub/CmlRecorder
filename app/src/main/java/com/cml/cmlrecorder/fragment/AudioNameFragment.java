@@ -1,4 +1,4 @@
-package com.cml.cmlrecorder;
+package com.cml.cmlrecorder.fragment;
 
 import android.app.Dialog;
 import android.os.Bundle;
@@ -11,6 +11,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cml.cmlrecorder.R;
+import com.cml.cmlrecorder.fragment.base.BaseDialogFragment;
+
 /**
  * author：cml on 2017/6/8
  * github：https://github.com/cmlgithub
@@ -18,14 +21,6 @@ import android.widget.Toast;
 
 public class AudioNameFragment extends BaseDialogFragment {
 
-
-//    public static PlayFragment newInstance(int position){
-//        PlayFragment playFragment = new PlayFragment();
-//        Bundle bundle = new Bundle();
-//        bundle.putInt(POSITION,position);
-//        playFragment.setArguments(bundle);
-//        return playFragment;
-//    }
     public static AudioNameFragment newInstance(){
         return new AudioNameFragment();
     }
